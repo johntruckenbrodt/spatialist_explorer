@@ -2,3 +2,7 @@ matplotlib
 jupyter
 IPython
 ipywidgets
+spatialist
+
+# optional for creating custom demo plot
+seaborn
