@@ -56,7 +56,7 @@ class RasterViewer(object):
         a label for the x-axis of the vertical spectra
     fontsize: int
         the label text font size
-    custom: list or None
+    custom_click: list or None
         Custom functions for plotting figures in additional subplots.
         Each figure will be updated upon click on the major map display.
         Each function is required to take at least an argument `axis`.
@@ -78,10 +78,10 @@ class RasterViewer(object):
     """
     
     def __init__(self, raster, cmap='jet', band_indices=None, band_names=None, pmin=2, pmax=98, zmin=None, zmax=None,
-                 ts_convert=None, title=None, datalabel='data', spectrumlabel='time', fontsize=8, custom=None):
+                 ts_convert=None, title=None, datalabel='data', spectrumlabel='time', fontsize=8, custom_click=None):
         
         self.ts_convert = ts_convert
-        self.custom = custom
+        self.custom_click = custom_click
         
         self.raster = raster
         
@@ -176,7 +176,7 @@ class RasterViewer(object):
         display(form)
         
         # self.fig = plt.figure(num=title)
-        if custom is None:
+        if custom_click is None:
             self.fig, axes = plt.subplots(1, 2, num=title)
             
             # left display (image)
@@ -184,7 +184,7 @@ class RasterViewer(object):
             # right display (time series)
             self.ax2 = axes[1]
         else:
-            rows = math.ceil(len(custom) / 2) + 1
+            rows = math.ceil(len(custom_click) / 2) + 1
             self.fig, axes = plt.subplots(rows, 2, num=title)
             self.ax1, self.ax2 = axes[0]
             self.cax = np.ravel(axes[1:])
@@ -320,8 +320,8 @@ class RasterViewer(object):
             label = 'x: {0:03}; y: {1:03}'.format(x, y)
             self.ax2.plot(self.timestamps, timeseries, label=label)
             self.ax2_legend = self.ax2.legend(loc=0, prop={'size': 7}, markerscale=1)
-            if self.custom is not None:
-                for i, func in enumerate(self.custom):
+            if self.custom_click is not None:
+                for i, func in enumerate(self.custom_click):
                     if func is not None:
                         self.cax[i].cla()
                         args = self.__argcheck(function=func,
