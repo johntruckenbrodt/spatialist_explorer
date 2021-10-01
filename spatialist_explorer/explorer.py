@@ -26,8 +26,8 @@ class RasterViewer(object):
 
     Parameters
     ----------
-    filename: str
-        the name of the file to display
+    raster: spatialist.raster.Raster
+        a raster object to display
     cmap: str
         the color map name for displaying the image.
         See :class:`matplotlib.colors.Colormap`.
@@ -77,27 +77,27 @@ class RasterViewer(object):
     :func:`matplotlib.pyplot.imshow`
     """
     
-    def __init__(self, filename, cmap='jet', band_indices=None, band_names=None, pmin=2, pmax=98, zmin=None, zmax=None,
+    def __init__(self, raster, cmap='jet', band_indices=None, band_names=None, pmin=2, pmax=98, zmin=None, zmax=None,
                  ts_convert=None, title=None, datalabel='data', spectrumlabel='time', fontsize=8, custom=None):
         
         self.ts_convert = ts_convert
         self.custom = custom
         
-        self.filename = filename
-        with Raster(filename) as ras:
-            self.rows = ras.rows
-            self.cols = ras.cols
-            self.bands = ras.bands
-            self.epsg = ras.epsg
-            self.crs = ras.srs
-            geo = ras.raster.GetGeoTransform()
-            self.nodata = ras.nodata
-            self.format = ras.format
-            if band_names is None:
-                self.bandnames = ras.bandnames
-            else:
-                self.bandnames = band_names
-            self.slider_readout = False
+        self.raster = raster
+        
+        self.rows = self.raster.rows
+        self.cols = self.raster.cols
+        self.bands = self.raster.bands
+        self.epsg = self.raster.epsg
+        self.crs = self.raster.srs
+        geo = self.raster.raster.GetGeoTransform()
+        self.nodata = self.raster.nodata
+        self.format = self.raster.format
+        if band_names is None:
+            self.bandnames = self.raster.bandnames
+        else:
+            self.bandnames = band_names
+        self.slider_readout = False
         
         self.timestamps = range(0, self.bands) if ts_convert is None else [ts_convert(x) for x in self.bandnames]
         
@@ -235,8 +235,7 @@ class RasterViewer(object):
         self.vline.set_xdata(self.timestamps[self.slider.value])
     
     def __read_band(self, band):
-        with Raster(self.filename) as ras:
-            mat = ras.matrix(band)
+        mat = self.raster.matrix(band)
         return mat
     
     def __img2map(self, x, y):
@@ -307,8 +306,8 @@ class RasterViewer(object):
             self.__reset_crosshair()
             
             # read the time series at the clicked coordinate
-            with Raster(self.filename)[self.y_coord, self.x_coord, :] as ras:
-                timeseries = ras.array()
+            with self.raster[self.y_coord, self.x_coord, :] as sub:
+                timeseries = sub.array()
             
             # convert the map coordinates collected at the click to image pixel coordinates
             x, y = self.__map2img(self.x_coord, self.y_coord)
