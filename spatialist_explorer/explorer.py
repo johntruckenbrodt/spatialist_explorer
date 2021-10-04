@@ -6,7 +6,6 @@ import re
 import math
 import inspect
 import numpy as np
-from spatialist.raster import Raster
 from spatialist.vector import Vector
 import matplotlib.pyplot as plt
 from osgeo import ogr
@@ -99,7 +98,10 @@ class RasterViewer(object):
             self.bandnames = band_names
         self.slider_readout = False
         
-        self.timestamps = range(0, self.bands) if ts_convert is None else [ts_convert(x) for x in self.bandnames]
+        if ts_convert is None:
+            self.timestamps = range(0, self.bands)
+        else:
+            self.timestamps = [ts_convert(x) for x in self.bandnames]
         
         self.datalabel = datalabel
         self.spectrumlabel = spectrumlabel
@@ -145,7 +147,8 @@ class RasterViewer(object):
         self.band = self.indices[len(self.indices) // 2]
         
         # define a slider for changing a plotted image
-        self.slider = IntSlider(min=min(self.indices), max=max(self.indices), step=1, continuous_update=False,
+        self.slider = IntSlider(min=min(self.indices), max=max(self.indices),
+                                step=1, continuous_update=False,
                                 value=self.band,
                                 description='band',
                                 style={'description_width': 'initial'},
@@ -165,11 +168,13 @@ class RasterViewer(object):
         self.write_shp.on_click(lambda x: self.shp())
         
         if self.format == 'ENVI':
-            self.sliderlabel = Label(value=self.bandnames[self.slider.value], layout={'width': '500px'})
+            self.sliderlabel = Label(value=self.bandnames[self.slider.get_interact_value()],
+                                     layout={'width': '500px'})
             children = [HBox([self.slider, self.sliderlabel]),
                         HBox([self.checkbox, self.clearbutton, self.write_csv, self.write_shp])]
         else:
-            children = [self.slider, HBox([self.checkbox, self.clearbutton, self.write_csv, self.write_shp])]
+            children = [self.slider, HBox([self.checkbox, self.clearbutton,
+                                           self.write_csv, self.write_shp])]
         
         form = VBox(children=children, layout=self.layout)
         
@@ -226,13 +231,13 @@ class RasterViewer(object):
         vmax = self.zmax if self.zmax is not None else pmax
         cmap = plt.get_cmap(self.colormap)
         cmap.set_bad('white')
-        title = self.bandnames[self.slider.value - 1]
+        title = self.bandnames[self.slider.get_interact_value() - 1]
         self.ax1.set_title(title, fontsize=self.fontsize)
         self.ax1.imshow(masked, vmin=vmin, vmax=vmax, extent=self.extent, cmap=cmap)
         if hasattr(self, 'sliderlabel'):
             self.sliderlabel.value = title
         self.__set_colorbar(self.ax1)
-        self.vline.set_xdata(self.timestamps[self.slider.value])
+        self.vline.set_xdata(self.timestamps[self.slider.get_interact_value()])
     
     def __read_band(self, band):
         mat = self.raster.matrix(band)
@@ -281,7 +286,8 @@ class RasterViewer(object):
         self.ax2.set_title('vertical point profiles', fontsize=self.fontsize)
         self.ax2.set_xlim([min(self.timestamps), max(self.timestamps)])
         # plot vertical line at the slider position
-        self.vline = self.ax2.axvline(self.timestamps[self.slider.value], color='black')
+        self.vline = self.ax2.axvline(self.timestamps[self.slider.get_interact_value()],
+                                      color='black')
     
     def __onclick(self, event):
         """
