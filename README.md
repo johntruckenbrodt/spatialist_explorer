@@ -4,4 +4,7 @@ integrated more deeply in the future.
 
 Here is a short demonstration of the functionality. Each click on the map displays the time series at its location 
 and executes several user-defined time series functions.
-![Demo](demo/demo.mp4)
+
+
+https://user-images.githubusercontent.com/18419439/140966338-8849879d-255a-433f-b705-2e4e348b3e5f.mp4
+
